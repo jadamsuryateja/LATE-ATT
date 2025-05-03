@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Late Comer Registry</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-strip">
+                <img src="nec.png" alt="NEC Logo" class="header-logo">
+            </div>
+            <h1>LATE COMERS REGISTRY</h1>
+            <p id="current-date"></p>
+        </header>
+        
+        <div class="nav-tabs">
+            <div class="nav-tab active" data-tab="scan"><i class="fas fa-camera"></i> Scan ID</div>
+            <div class="nav-tab" data-tab="history"><i class="fas fa-history"></i> History</div>
+            <div class="nav-tab" data-tab="settings"><i class="fas fa-cog"></i> Settings</div>
+        </div>
+        
+        <!-- Scan Tab -->
+        <div id="scan" class="tab-content active">
+            <div class="scanner-controls">
+                <select id="camera-select">
+                    <option value="">Select Camera</option>
+                </select>
+                <button id="start-scanner"><i class="fas fa-play"></i> Start Scanner</button>
+            </div>
+            
+            <div class="scanner-container hidden" id="scanner-view">
+                <video id="scanner-video" playsinline></video>
+                <canvas id="scanner-canvas"></canvas>
+                <div class="scanner-overlay">
+                    <div class="scan-frame"></div>
+                    <p>Align the barcode within the frame</p>
+                    <div id="barcode-result"></div>
+                </div>
+            </div>
+            
+            <div class="status-message info" id="scan-status">
+                Please select a camera and start the scanner.
+            </div>
+            
+            <div class="attendance-actions hidden" id="scan-actions">
+                <button id="confirm-scan" class="success"><i class="fas fa-check"></i> Confirm</button>
+                <button id="cancel-scan" class="warning"><i class="fas fa-times"></i> Cancel</button>
+            </div>
+            
+            <div class="attendance-list hidden" id="attendance-section">
+                <h2><i class="fas fa-list"></i>LATE COMERS LIST</h2>
+                <table id="attendance-table">
+                    <thead>
+                        <tr>
+                            <th>S.No</th>
+                            <th>ID Number</th>
+                            <th>Time</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                
+                <button id="save-excel" class="success"><i class="fas fa-file-excel"></i> Save Excel</button>
+            </div>
+        </div>
+        
+        <!-- History Tab -->
+        <div id="history" class="tab-content">
+            <h2><i class="fas fa-history"></i> Attendance History</h2>
+            
+            <div class="history-actions">
+                <button id="refresh-history" class="success"><i class="fas fa-sync-alt"></i> Refresh</button>
+                <button id="clear-history" class="danger"><i class="fas fa-trash"></i> Clear History</button>
+            </div>
+            
+            <div id="history-content">
+                <div class="history-empty">
+                    <p>No attendance records found. Please scan and save attendance to view history here.</p>
+                </div>
+                <div class="history-table-container">
+                    <table id="history-table" class="hidden">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>File Name</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content">
+            <h2><i class="fas fa-cog"></i> Settings</h2>
+            <div class="status-message info">
+                Configure your attendance scanning preferences below.
+            </div>
+            
+            <div class="setting-group">
+                <h3><i class="fas fa-camera"></i> Camera Settings</h3>
+                <p>Choose default camera and scanning preferences.</p>
+                <div class="form-group">
+                    <label for="default-camera">Default Camera:</label>
+                    <select id="default-camera">
+                        <option value="environment">Back Camera</option>
+                        <option value="user">Front Camera</option>
+                        <option value="auto">Auto Select</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="setting-group">
+                <h3><i class="fas fa-file-excel"></i> Save Format Options</h3>
+                <p>Excel (.xlsx) is the default save format.</p>
+                <div class="form-group">
+                    <label for="filename-format">Filename Format:</label>
+                    <select id="filename-format">
+                        <option value="attendance_YYYY-MM-DD">late commers_YYYY-MM-DD.xlsx</option>
+                        <option value="class_YYYYMMDD">class late commers_YYYY-MM-DD.xlsx</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="setting-group">
+                <h3><i class="fas fa-bell"></i> Notifications</h3>
+                <p>Configure notification preferences.</p>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="enable-sound" checked> Enable sound when scanning
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="enable-vibration" checked> Enable vibration on mobile devices
+                    </label>
+                </div>
+            </div>
+            
+            <button id="save-settings" class="success"><i class="fas fa-save"></i> Save Settings</button>
+            <div class="status-message hidden" id="settings-status"></div>
+        </div>
+    </div>
+
+    <!-- Rename Modal -->
+    <div id="rename-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Rename File</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="rename-input" placeholder="Enter new file name">
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-rename" class="warning">Cancel</button>
+                <button id="confirm-rename" class="success">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Confirm Deletion</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this file? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-delete" class="warning">Cancel</button>
+                <button id="confirm-delete" class="danger">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include QuaggaJS for barcode scanning -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+      
+    <script src="index.js"></script>
+</body>
+</html>
